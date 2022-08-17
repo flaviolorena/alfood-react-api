@@ -1,53 +1,76 @@
-import { Button, TextField } from '@mui/material';
-import axios from 'axios';
+import { Button, TextField, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import http from '../../../http';
 import IRestaurante from '../../../interfaces/IRestaurante';
 
 const FormularioRestaurante = () => {
 	const parametros = useParams();
 
 	useEffect(() => {
-    if(parametros.id){
-      axios.get<IRestaurante>(`http://0.0.0.0:8000/api/v2/restaurantes/${parametros.id}/`)
-        .then(resposta => setNomeRestaurante(resposta.data.nome))
-    }
-  }, [parametros]);
+		if (parametros.id) {
+			http
+				.get<IRestaurante>(`restaurantes/${parametros.id}/`)
+				.then((resposta) => setNomeRestaurante(resposta.data.nome));
+		}
+	}, [parametros]);
 	const [nomeRestaurante, setNomeRestaurante] = useState('');
 
 	const aoSubmeterForm = (evento: React.FormEvent<HTMLFormElement>) => {
 		evento.preventDefault();
 
-    if(parametros.id){
-      axios
-      .put(`http://0.0.0.0:8000/api/v2/restaurantes/${parametros.id}/`, {
-        nome: nomeRestaurante,
-      })
-      .then(() => console.log('restaurante atualizado'));
-    }else{
-
-      //faz o envio para /restaurantes, seguido do conteudo a ser enviado
-      axios
-        .post('http://0.0.0.0:8000/api/v2/restaurantes/', {
-          nome: nomeRestaurante,
-        })
-        .then(() => console.log('restaurante postado'));
-    }
+		//se ja existe o parametro de ID, ele vai editar o existente
+		if (parametros.id) {
+			http
+				.put(`/restaurantes/${parametros.id}/`, {
+					nome: nomeRestaurante,
+				})
+				.then(() => console.log('restaurante atualizado'));
+		} else {
+			//faz o envio para /restaurantes, seguido do conteudo a ser enviado
+			http
+				.post('/restaurantes/', {
+					nome: nomeRestaurante,
+				})
+				.then(() => console.log('restaurante postado'));
+		}
 	};
 
 	return (
-		<form onSubmit={aoSubmeterForm}>
-			<TextField
-				id="standard-basic"
-				value={nomeRestaurante}
-				onChange={(evento) => setNomeRestaurante(evento.target.value)}
-				label="Nome do restaurante"
-				variant="standard"
-			/>
-			<Button type="submit" variant="outlined">
-				Salvar
-			</Button>
-		</form>
+		<>
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					flexGrow: 1,
+				}}
+			>
+				<Typography component='h1' variant='h6'>
+					Formulario de Restaurantes
+				</Typography>
+				<Box component='form' sx={{ width: '100%' }} onSubmit={aoSubmeterForm}>
+					<TextField
+						id='standard-basic'
+						value={nomeRestaurante}
+						onChange={(evento) => setNomeRestaurante(evento.target.value)}
+						label='Nome do restaurante'
+						variant='standard'
+						fullWidth
+						required
+					/>
+					<Button
+						sx={{ marginTop: 1 }}
+						type='submit'
+						variant='outlined'
+						fullWidth
+					>
+						Salvar
+					</Button>
+				</Box>
+			</Box>
+		</>
 	);
 };
 
