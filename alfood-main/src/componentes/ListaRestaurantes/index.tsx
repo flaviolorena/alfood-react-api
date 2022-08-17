@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { IPaginacao } from '../../interfaces/IPaginacao';
+import IPrato from '../../interfaces/IPrato';
 import IRestaurante from '../../interfaces/IRestaurante';
 import style from './ListaRestaurantes.module.scss';
 import Restaurante from './Restaurante';
@@ -8,6 +9,7 @@ import Restaurante from './Restaurante';
 const ListaRestaurantes = () => {
 
   const [restaurantes, setRestaurantes] = useState<IRestaurante[]>([]);
+  const [pratos, setPratos] = useState<IPrato[]>([]);
   const [proximaPagina, setProximaPagina] = useState('');
 
  useEffect(() =>{
@@ -17,6 +19,13 @@ const ListaRestaurantes = () => {
       setRestaurantes(resposta.data.results)
       setProximaPagina(resposta.data.next)
     })
+    
+    axios.get<IPaginacao<IPrato>>('http://0.0.0.0:8000/api/v1/pratos/')
+    .then(resposta => {
+      console.log(resposta.data.results)
+      setPratos(resposta.data.results)
+    })
+
 },[])
 
 const verMais = () =>{
@@ -27,9 +36,17 @@ const verMais = () =>{
   })
 }
 
+
+
   return (<section className={style.ListaRestaurantes}>
     <h1>Os restaurantes mais <em>bacanas</em>!</h1>
-    {restaurantes?.map(item => <Restaurante restaurante={item} key={item.id} />)}
+    
+    {restaurantes.map((item) => (
+      <>
+        <Restaurante restaurante={item} key={item.id} />
+      </>
+    ))}
+
     {proximaPagina && <button onClick={verMais}> ver mais </button>}
   </section>)
 }
